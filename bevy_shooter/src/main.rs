@@ -167,7 +167,7 @@ fn setup(
     commands.spawn((
         Text::new("WASD move  Mouse aim  Hold LMB shoot  Shift sprint"),
         TextFont {
-            font_size: 18.0,
+            font_size: FontSize::Px(18.0),
             ..default()
         },
         TextColor(Color::WHITE),
@@ -216,7 +216,7 @@ fn player_input(
     camera: Query<(&Camera, &GlobalTransform)>,
     walls: Query<(&Transform, &Wall)>,
     game_over: Res<GameOver>,
-    mut players: Query<(&mut Transform, &mut Player)>,
+    mut players: Query<(&mut Transform, &mut Player), Without<Wall>>,
 ) {
     if game_over.0 {
         return;
@@ -304,8 +304,8 @@ fn update_bullets(
     mut commands: Commands,
     mut score: ResMut<Score>,
     walls: Query<(&Transform, &Wall)>,
-    mut bullets: Query<(Entity, &mut Transform, &mut Bullet)>,
-    mut enemies: Query<(Entity, &mut Transform, &mut Enemy)>,
+    mut bullets: Query<(Entity, &mut Transform, &mut Bullet), (Without<Enemy>, Without<Wall>)>,
+    mut enemies: Query<(Entity, &mut Transform, &mut Enemy), (Without<Bullet>, Without<Wall>)>,
 ) {
     for (bullet_entity, mut bullet_transform, mut bullet) in &mut bullets {
         bullet.lifetime.tick(time.delta());
@@ -391,8 +391,8 @@ fn update_enemies(
     time: Res<Time>,
     mut game_over: ResMut<GameOver>,
     walls: Query<(&Transform, &Wall)>,
-    mut players: Query<(&Transform, &mut Player), Without<Enemy>>,
-    mut enemies: Query<(&mut Transform, &mut Enemy)>,
+    mut players: Query<(&Transform, &mut Player), (Without<Enemy>, Without<Wall>)>,
+    mut enemies: Query<(&mut Transform, &mut Enemy), Without<Wall>>,
 ) {
     if game_over.0 {
         return;
@@ -466,7 +466,7 @@ fn update_lighting(
         &wall_segments(&walls),
     );
 
-    if let Some(mesh) = meshes.get_mut(&mesh_2d.0) {
+    if let Some(mut mesh) = meshes.get_mut(&mesh_2d.0) {
         *mesh = darkness_mesh(&polygon);
     }
 }
